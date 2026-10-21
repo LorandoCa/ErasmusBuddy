@@ -17,7 +17,9 @@ def kickoff_crew(crew_name: str, inputs: dict):
     crew_path = CREW_FILES[crew_name]
     print(crew_path, crew_path.exists())  # diagnóstico, podes remover depois
 
-    crew, default_inputs = load_crew(crew_path)
+    crew_path = CREW_FILES[crew_name]
+    # os agentes estão na mesma pasta que o .jsonc da crew
+    crew, default_inputs = load_crew(crew_path, agents_dir=crew_path.parent)
     return crew.kickoff(inputs={**default_inputs, **inputs})
 
 
