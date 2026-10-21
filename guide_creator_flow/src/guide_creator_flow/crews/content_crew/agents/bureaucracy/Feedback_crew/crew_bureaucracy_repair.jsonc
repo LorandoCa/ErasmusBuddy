@@ -1,0 +1,63 @@
+{
+  // Display name for this crew
+  "name": "change_request_crew",
+
+  // Agents to include — each must have a matching agents/<name>.jsonc file
+  "agents": ["repair_request", "apply_request"],
+
+  // Task definitions — executed in order for sequential process
+  "tasks": [
+    {
+      // Task identifier
+      "name": "draft_change_request_task",
+
+      // What the task should accomplish
+      // Use {placeholder} inputs here; crewai run prompts for missing values
+      "description": "You receive a repair request written by a user, the name of the section they want to change, and the CURRENT CONTENT of that section. USER REPAIR REQUEST: {user_request}. TARGET SECTION: {section}. CURRENT CONTENT OF THE SECTION: {section_content}. Your job is to turn this into a precise change request, NOT to fix the section yourself. The change request must contain, in this order: (1) Target section, (2) Summary of what the user reported, (3) What is currently wrong or missing, (4) Exact changes required, as a numbered list where each item is a single, verifiable action, (5) What must NOT be changed, (6) Acceptance criteria for the corrected version, (7) Assumptions made, if the user's request was vague. Be specific: quote or reference the exact part of the CURRENT CONTENT that must change. Do not add changes the user did not ask for. Do not ask the user for more information; if something is unclear, choose the most reasonable interpretation and state it under 'Assumptions'. When the change request is complete, delegate it to the coworker with the role 'Apply a change request to a report section and return the corrected version'. In the request, pass BOTH the FULL change request AND the FULL, unmodified CURRENT CONTENT of the section, because the coworker cannot see it otherwise. Wait for the corrected version, then return both the change request and the corrected version as your final answer.",
+
+      // Clear definition of what the output should look like
+      "expected_output": "A markdown document with two parts: (A) CHANGE REQUEST, containing the seven items listed in the description (target section, summary of the report, current problem, numbered list of exact changes, what must not change, acceptance criteria, assumptions), and (B) CORRECTED VERSION, containing the corrected section exactly as returned by the coworker.",
+
+      // Optional task guardrail(s) validate output before completion
+      // "guardrail": "The change request must contain a numbered list of exact changes and acceptance criteria.",
+      // "guardrail_max_retries": 2,
+
+      // Which agent handles this task
+      "agent": "repair_request",
+
+      "output_file": "output/change_request.md"
+    },
+    {
+      // Task identifier
+      "name": "apply_change_request_task",
+
+      // What the task should accomplish
+      "description": "You receive, in your context, the change request written by the previous task for the section '{section}', together with the corrected version produced during delegation. For reference, this is the ORIGINAL CONTENT of the section before any change: {section_content}. Your job is to review and finalize the corrected version. Check it against EVERY numbered change and EVERY acceptance criterion of the change request, and against the list of things that must NOT be changed (compare with the ORIGINAL CONTENT to confirm that nothing unrequested was altered). If something is missing or wrong, fix it now, following the change request literally. Do not add new information or make unrequested improvements. NEVER ask the user for the change request or the original section: both are already available to you. If a requested change is impossible or contradicts another instruction, apply everything else and flag the problem in a short note after the corrected section.",
+
+      "expected_output": "The final corrected section '{section}' as clean markdown, followed by a short bullet list titled 'Changes made' describing each change applied. If any requested change could not be applied, add a short 'Notes' line explaining why. No other commentary.",
+
+      // Which agent handles this task
+      "agent": "apply_request",
+
+      "output_file": "output/corrected_section.md"
+    }
+  ],
+
+  // Execution process
+  "process": "sequential",
+
+  // Enable verbose logging during execution
+  "verbose": true,
+
+  // Enable crew memory
+  "memory": false,
+
+  "max_rpm": 10,
+
+  // Runtime input defaults. `crewai run` prompts for any placeholders missing here.
+  "inputs": {
+    "user_request": "",
+    "section": "",
+    "section_content": ""
+  }
+}

@@ -1,0 +1,138 @@
+{
+  // Display name for this crew
+  "name": "testing_crewAI",
+
+  // Agents to include — each must have a matching agents/<name>.jsonc file
+  "agents": ["search_info", "create_report"],
+
+  // Task definitions — executed in order for sequential process
+  "tasks": [
+    {
+      // Task identifier
+      "name": "search_the_official_erasmus_task",
+
+      // What the task should accomplish
+      // Use {placeholder} inputs here; crewai run prompts for missing values
+      "description": "Your goal is to build a checklist for an Erasmus+ student who has ALREADY been accepted and is ARRIVING in {city}, {country} (destination country, not the home country). Your PRIMARY source is the official Erasmus+ website of {country} (the national agency / official Erasmus+ portal for incoming students). Explore it in depth: do not stop at the homepage or at search snippets. Open and read the sections addressed to incoming / international students (for example 'incoming students', 'study in {country}', 'before you arrive', 'after arrival', 'practical information', 'living in {country}') and follow their internal links to the relevant subpages. Organize what you find into three parts. PART 1, arrival 'must do' list: extract ONLY what this official source recommends or requires that incoming students do when preparing to arrive and after arrival (for example registration with local authorities, residence or registration certificate, tax number, health insurance, housing registration, and similar tasks). PART 2, public transport: find all documents and steps required to get a public transport card or pass in {city} (operator name, where to apply, required documents, student discount conditions). PART 3, other relevant information: collect every other piece of information that the official Erasmus+ website of {country} (and, as a complement, the official portals of the universities and of the city of {city}) presents as useful for incoming Erasmus+ students and that does not fit in parts 1 and 2. Examples: accommodation options and support, health care and emergency numbers, student support services, orientation or welcome programmes, buddy or mentoring programmes, language courses, cultural and social activities, practical living information. Include an item only if an official source presents it to incoming students; do not add generic advice from your own knowledge. DO NOT include application procedures, eligibility criteria, application deadlines, selection criteria, or grants. Ignore any page that only covers those topics. Every item must be backed by an official source link; if you cannot find an official source for an item, say so instead of guessing. If you need information from the student (for example nationality, whether they are EU citizen, duration of stay, university name), prepare one structured, numbered list with all your questions and delegate it to the coworker with the role 'Create a report given by a fellow agent', passing the complete list in the request. Wait for the answers, then continue. Do this at most 3 times. Final output: the structured checklist with source links.",      
+      // Clear definition of what the output should look like
+      "expected_output": "A markdown document with three sections: (1) Arrival 'must do' checklist for {city}, {country}, based on the official Erasmus+ website of {country}, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students (accommodation, health, student support, orientation, language courses, practical living information, and similar topics found on official sources). Each item has a short description and an official source link. No information about applying to Erasmus, eligibility or deadlines.",      // Optional task guardrail(s) validate output before completion
+      // Use "guardrail" for one rule or "guardrails" for many
+      // Failed guardrails retry up to guardrail_max_retries times
+      // "guardrail": "Every factual claim needs context support.",
+      // "guardrails": [
+      //   "Every factual claim must be supported by context.",
+      //   "The answer must match the expected output format."
+      // ],
+      // "guardrail_max_retries": 2,
+
+      // Advanced task options:
+      // Docs: https://docs.crewai.com/concepts/tasks
+      // "type": "ConditionalTask",
+      // "condition": { "python": "my_project.conditions.should_run" },
+      // "output_json": { "python": "my_project.models.ReportOutput" },
+      // "output_pydantic": null,
+      // "response_model": null,
+      // "converter_cls": { "python": "my_project.converters.CustomConverter" },
+      // "markdown": false,
+      // "input_files": { "brief": "data/brief.txt" },
+      // "security_config": {},
+
+      // Which agent handles this task
+      "agent": "search_info",
+
+      // "tools": [],
+      // "human_input": false,
+      // "async_execution": false
+
+       "output_file": "output/report.md"
+
+    }
+,
+    {
+      // Task identifier
+      "name": "collect_the_result_returned_task",
+
+      // What the task should accomplish
+      // Use {placeholder} inputs here; crewai run prompts for missing values
+      "description": "You have two responsibilities. (1) Interviewer: whenever a coworker sends you a list of questions for the student, call the ask_user tool ONCE with the complete list, wait for the answers, and return all of them to the coworker exactly as the user gave them. Never invent answers. Use the ask_user tool ONLY in this situation. (2) Report writer: you receive, in your context, the research output of the previous task about what an incoming Erasmus+ student must do in {city}, {country}. Turn it into a clear, well-organized final report in markdown with three sections: (1) Arrival 'must do' checklist, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students. Use ONLY the information from the research and the user's answers. Do not invent or add facts. Keep every official source link next to the item it supports. Keep all items from the research. NEVER ask the user for the research text or for the content of the previous task: it is already in your context. If an item has no official source, mark it as 'source not confirmed'. Write the report in English.",
+
+      "expected_output": "The complete final markdown document, not a summary and not comments about the document. It has a title, a short introduction, and three sections: (1) Arrival 'must do' checklist for {city}, {country}, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students. Each item has a short explanation and its official source link. All items from the research are included. No information about applying to Erasmus, eligibility or deadlines.", // Optional task guardrail(s) validate output before completion
+      // Use "guardrail" for one rule or "guardrails" for many
+      // Failed guardrails retry up to guardrail_max_retries times
+      // "guardrail": "Every factual claim needs context support.",
+      // "guardrails": [
+      //   "Every factual claim must be supported by context.",
+      //   "The answer must match the expected output format."
+      // ],
+      // "guardrail_max_retries": 2,
+
+      // Advanced task options:
+      // Docs: https://docs.crewai.com/concepts/tasks
+      // "type": "ConditionalTask",
+      // "condition": { "python": "my_project.conditions.should_run" },
+      // "output_json": { "python": "my_project.models.ReportOutput" },
+      // "output_pydantic": null,
+      // "response_model": null,
+      // "converter_cls": { "python": "my_project.converters.CustomConverter" },
+      // "markdown": false,
+      // "input_files": { "brief": "data/brief.txt" },
+      // "security_config": {},
+
+      // Which agent handles this task
+      "agent": "create_report",
+
+      // "tools": [],
+      // "human_input": false,
+      // "async_execution": false
+
+       "output_file": "output/Erasmus_Application_Guide.md"
+    }
+
+  ],
+
+  // Execution process
+  // "sequential" — tasks run in order, each receiving prior task outputs
+  // "hierarchical" — a manager agent delegates tasks (requires manager_llm)
+  "process": "sequential",
+
+  // Enable verbose logging during execution
+  "verbose": true,
+
+  // Enable crew memory — persists context and learnings across tasks
+  "memory": false,
+
+  // Automatically plan the execution strategy before running tasks
+  // "planning": false,
+
+  // LLM for the planning step (used when planning is true)
+  // "planning_llm": "openai/gpt-4o",
+
+  // LLM for the manager agent (required when process is "hierarchical")
+  // "manager_llm": "openai/gpt-4o",
+
+  // Crew-level LLM fields also accept object form for custom endpoints
+  // "chat_llm": {"model": "llama3", "provider": "ollama", "base_url": "http://localhost:11434"},
+
+  // Advanced crew options:
+  // Docs: https://docs.crewai.com/concepts/crews
+  // For hierarchical crews, manager_agent can reference an agents/<name>.jsonc file
+  // that is not included in the "agents" list.
+  // "manager_agent": "search_for_a_given_country_th",
+  // "before_kickoff_callbacks": [{"python": "my_project.callbacks.before_kickoff"}],
+  // "after_kickoff_callbacks": [{"python": "my_project.callbacks.after_kickoff"}],
+  // "function_calling_llm": "openai/gpt-4o-mini",
+  "max_rpm": 10,
+  // "cache": true,
+  // "knowledge_sources": [],
+  // "embedder": {},
+  // "output_log_file": "crew.log",
+  // "stream": false,
+  // "tracing": false,
+  // "security_config": {},
+
+  // Optional runtime input defaults.
+  // Use {placeholder} in agent or task text, for example:
+  // "description": "Research {topic} and write a brief"
+  // `crewai run` prompts for any placeholders missing from this object.
+  "inputs": {}
+}
