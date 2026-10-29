@@ -1,2 +1,0 @@
-# ErasmusBuddy
-ALLM-basedmulti-agentapplicationforplanninganErasmus studentmobility
