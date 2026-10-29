@@ -1,6 +1,6 @@
 {
   // Display name for this crew
-  "name": "testing_crewAI",
+  "name": "Report_crew",
 
   // Agents to include — each must have a matching agents/<name>.jsonc file
   "agents": ["search_info", "create_report"],

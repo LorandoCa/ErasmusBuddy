@@ -7,6 +7,7 @@ AGENTS_DIR = Path(__file__).resolve().parent / "agents"
 CREW_FILES = {
     "bureaucracy": AGENTS_DIR / "bureaucracy" / "Report_crew" / "crew_bureaucracy.jsonc",
     "bureaucracy_repair": AGENTS_DIR / "bureaucracy" / "Feedback_crew" / "crew_bureaucracy_repair.jsonc",
+    "finances": AGENTS_DIR / "finances" / "finances_crew.jsonc"
 }
 
 
@@ -15,9 +16,7 @@ def kickoff_crew(crew_name: str, inputs: dict):
         raise ValueError(f"Crew desconhecida: {crew_name!r}. Opções: {list(CREW_FILES)}")
 
     crew_path = CREW_FILES[crew_name]
-    print(crew_path, crew_path.exists())  # diagnóstico, podes remover depois
 
-    crew_path = CREW_FILES[crew_name]
     # os agentes estão na mesma pasta que o .jsonc da crew
     crew, default_inputs = load_crew(crew_path, agents_dir=crew_path.parent)
     return crew.kickoff(inputs={**default_inputs, **inputs})
@@ -29,3 +28,6 @@ def kickoff_bureaucracy_crew(inputs: dict):
 
 def kickoff_bureaucracy_crew_repair(inputs: dict):
     return kickoff_crew("bureaucracy_repair", inputs)
+
+def kickoff_finances_crew(inputs: dict):
+    return kickoff_crew("finances", inputs)

@@ -1,0 +1,141 @@
+{
+  // Display name for this crew
+  "name": "Finances_crew",
+
+  // Agents to include — each must have a matching agents/<name>.jsonc file
+  "agents": ["entertainment_agent", "groceries_agent"],
+
+  // Task definitions — executed in order for sequential process
+  "tasks": [
+    {
+      // Task identifier
+      "name": "groceries_cost_task",
+
+      // What the task should accomplish
+      // Use {placeholder} inputs here; crewai run prompts for missing values
+        "description": "Find the average monthly groceries spending of a student in {city}, {country}. Use the web search tool. Give the average, the low-high range (all in euros, as numbers) and the source URLs.",
+      // Clear definition of what the output should look like
+        "expected_output": "A structured result with average_monthly, low, high (numbers in euros) and sources (list of URLs).",
+      // Use "guardrail" for one rule or "guardrails" for many
+      // Failed guardrails retry up to guardrail_max_retries times
+      // "guardrail": "Every factual claim needs context support.",
+      // "guardrails": [
+      //   "Every factual claim must be supported by context.",
+      //   "The answer must match the expected output format."
+      // ],
+      // "guardrail_max_retries": 2,
+
+      // Advanced task options:
+      // Docs: https://docs.crewai.com/concepts/tasks
+      // "type": "ConditionalTask",
+      // "condition": { "python": "my_project.conditions.should_run" },
+      // "output_json": { "python": "my_project.models.ReportOutput" },
+      // "output_pydantic": null,
+      // "response_model": null,
+      // "converter_cls": { "python": "my_project.converters.CustomConverter" },
+      // "markdown": false,
+      // "input_files": { "brief": "data/brief.txt" },
+      // "security_config": {},
+
+      // Which agent handles this task
+      "agent": "groceries_agent",
+
+      "output_pydantic": { "python": "guide_creator_flow.crews.content_crew.models.CostEstimate" },
+
+      // "human_input": false,
+       "async_execution": true
+
+    }
+,
+    {
+      // Task identifier
+      "name": "entertainment_cost_task",
+
+
+      // What the task should accomplish
+      // Use {placeholder} inputs here; crewai run prompts for missing values
+      "description": "Find the average monthly entertainment spending of a student in {city}, {country}. Use the web search tool. Give the average, the low-high range (all in euros, as numbers) and the source URLs.",
+
+      "expected_output": "A structured result with average_monthly, low, high (numbers in euros) and sources (list of URLs).",
+      // Use "guardrail" for one rule or "guardrails" for many
+      // Failed guardrails retry up to guardrail_max_retries times
+      // "guardrail": "Every factual claim needs context support.",
+      // "guardrails": [
+      //   "Every factual claim must be supported by context.",
+      //   "The answer must match the expected output format."
+      // ],
+      // "guardrail_max_retries": 2,
+
+      // Advanced task options:
+      // Docs: https://docs.crewai.com/concepts/tasks
+      // "type": "ConditionalTask",
+      // "condition": { "python": "my_project.conditions.should_run" },
+      // "output_json": { "python": "my_project.models.ReportOutput" },
+      // "output_pydantic": null,
+      // "response_model": null,
+      // "converter_cls": { "python": "my_project.converters.CustomConverter" },
+      // "markdown": false,
+      // "input_files": { "brief": "data/brief.txt" },
+      // "security_config": {},
+
+      // Which agent handles this task
+      "agent": "entertainment_agent",
+
+      // "tools": [],
+      // "human_input": false,
+      "async_execution": false,
+
+      "output_pydantic": { "python": "guide_creator_flow.crews.content_crew.models.CostEstimate" }
+    }
+
+  ],
+
+  // Execution process
+  // "sequential" — tasks run in order, each receiving prior task outputs
+  // "hierarchical" — a manager agent delegates tasks (requires manager_llm)
+  "process": "sequential",
+
+  // Enable verbose logging during execution
+  "verbose": true,
+
+  // Enable crew memory — persists context and learnings across tasks
+  "memory": false,
+
+  // Automatically plan the execution strategy before running tasks
+  // "planning": false,
+
+  // LLM for the planning step (used when planning is true)
+  // "planning_llm": "openai/gpt-4o",
+
+  // LLM for the manager agent (required when process is "hierarchical")
+  // "manager_llm": "openai/gpt-4o",
+
+  // Crew-level LLM fields also accept object form for custom endpoints
+  // "chat_llm": {"model": "llama3", "provider": "ollama", "base_url": "http://localhost:11434"},
+
+  // Advanced crew options:
+  // Docs: https://docs.crewai.com/concepts/crews
+  // For hierarchical crews, manager_agent can reference an agents/<name>.jsonc file
+  // that is not included in the "agents" list.
+  // "manager_agent": "search_for_a_given_country_th",
+  // "before_kickoff_callbacks": [{"python": "my_project.callbacks.before_kickoff"}],
+  // "after_kickoff_callbacks": [{"python": "my_project.callbacks.after_kickoff"}],
+  // "function_calling_llm": "openai/gpt-4o-mini",
+  "max_rpm": 10,
+  // "cache": true,
+  // "knowledge_sources": [],
+  // "embedder": {},
+  // "output_log_file": "crew.log",
+  // "stream": false,
+  // "tracing": false,
+  // "security_config": {},
+
+  // Optional runtime input defaults.
+  // Use {placeholder} in agent or task text, for example:
+  // "description": "Research {topic} and write a brief"
+  // `crewai run` prompts for any placeholders missing from this object.
+  "inputs": {
+    "city": "",
+    "country": ""
+  }
+}

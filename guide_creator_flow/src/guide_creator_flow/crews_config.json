@@ -7,6 +7,10 @@
   "bureaucracy_repair": { 
     "function": "kickoff_bureaucracy_crew_repair",
     "required_fields": ["user_request", "section", "section_content"],
-    "Ccomments": "Consider user this agent for correcting every other sections."
+    "Comments": "Consider using this agent for correcting every other sections."
+  },
+  "finances": {
+    "function": "kickoff_finances_crew",
+    "required_fields": ["city", "country"]
   }
 }

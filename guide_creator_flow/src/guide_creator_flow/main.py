@@ -1,23 +1,26 @@
 #!/usr/bin/env python
 import json
+import asyncio
 import os
 from typing import List, Dict
-from pydantic import BaseModel, Field
-from crewai import LLM
+from pydantic import BaseModel#, Field
+#from crewai import LLM
 from crewai.flow.flow import Flow, listen, start
-from guide_creator_flow.crews.content_crew.content_crew import kickoff_bureaucracy_crew # ADD THE OTHERS CREW HERE
 
 
 #---------------IMPORTED--------------------
-from Flow_functions import pedir_input
+from Flow_functions import pedir_input, run_bureaucracy, run_finances # should be later defined as a tool
 import json
 #--------------------------------------
 
 
 # Define our global variables
-CREWS = {
-    "bureaucracy": kickoff_bureaucracy_crew
+SECTION_RUNNERS = {
+    "bureaucracy": run_bureaucracy, # Add later the feedback crew
+    "finances": run_finances
 }
+MAX_CONCURRENT_CREWS = 2
+MAX_ROUNDS = 3 
 
 
 # Define our flow state
@@ -26,7 +29,6 @@ class GuideCreatorState(BaseModel):
     sections: List[str] = ["bureaucracy"] #"Finance", "Housing", "Commute" add them when you have the correspondent agents
     sections_content: Dict[str, str] = {}
 
-"""O orchestrator vai ter que fazer uma especie de @start parecido com essa para pedir as informações iniciais"""
 class GuideCreatorFlow(Flow[GuideCreatorState]):
     """Flow for creating a personalized checklist/information guide for Erasmus Students"""
 
@@ -45,7 +47,7 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
             info["destination_country"] = pedir_input("Enter your destination country: ")
             if info["destination_country"].lower() != info["origin_country"].lower():
                 break
-            print("O país de destino tem de ser diferente do país de origem.")
+            print("Destination country must be different from origin country.")
 
         info["origin_university"] = pedir_input("Enter your origin university: ")
         info["destination_university"] = pedir_input("Enter your destination university: ")
@@ -58,58 +60,81 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
 
 
     @listen(get_user_input)
-    def write_and_compile_guide(self, state):
-        """Write all sections and compile the guide"""
+    async def write_and_compile_guide(self, state):
         print("Writing guide sections and compiling...")
 
-        completed_sections = []
-        CREWS_CONFIG = {}
         with open("crews_config.json", encoding="utf-8") as f:
-            CREWS_CONFIG = json.load(f)
+            crews_config = json.load(f)
 
-        # Process sections one by one to maintain context flow
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT_CREWS)
+        completed: list[str] = []          # sections with a concrete (non-question) answer
+        extra_inputs: dict[str, dict] = {} # per-section answers collected from the user
+
+        async def run_section(section: str):
+            runner = SECTION_RUNNERS.get(section.lower())
+            if runner is None:
+                raise ValueError(f"No runner registered for section {section!r}")
+            async with semaphore:
+                print(f"Processing section: {section}")
+                return await runner(
+                    self.state.personal_info, crews_config, extra_inputs.get(section) # This extra_inputs, injects in the the crew a set of answers from that previous reasonning
+                )
+
+        for round_number in range(1, MAX_ROUNDS + 1):
+            pending = [s for s in state.sections if s not in completed]
+            if not pending:
+                break
+
+            print(f"\n--- Round {round_number}: {pending} ---")
+            results = await asyncio.gather(
+                *(run_section(s) for s in pending),
+                return_exceptions=True,
+            )
+
+            asked_questions = {}  # section -> list of questions, for this round only
+
+            for section, outcome in zip(pending, results):
+                if isinstance(outcome, Exception):
+                    print(f"Section failed: {section} -> {outcome}")
+                    completed.append(section)  # do not retry a crash forever
+                    continue
+
+                questions = extract_questions(section, outcome) # Define an agent responsible for colecting those questions
+                if questions:
+                    asked_questions[section] = questions
+                else:
+                    self.state.sections_content[section] = outcome.raw
+                    completed.append(section)
+                    print(f"Section completed: {section}")
+
+            if not asked_questions:
+                break
+
+            # Sequential on purpose: prompts from different crews must not interleave
+            for section, questions in asked_questions.items():
+                extra_inputs[section] = collect_user_answers(section, questions) # Define a function that will be responsible for collecting answers
+                # IMPORTANT: Concat the question with the answer
+        else:
+            print(f"Reached MAX_ROUNDS ({MAX_ROUNDS}) with unfinished sections: "
+                f"{[s for s in state.sections if s not in completed]}")
+
+
+
+
+        guide_content = "# Your Personalized Erasmus Guide\n\n"
         for section in state.sections:
-            print(f"Processing section: {section}")
+            guide_content += f"\n\n{self.state.sections_content.get(section, '')}\n\n"
 
-            section_inputs = CREWS_CONFIG.get(section.lower())
-            required_fields = section_inputs.get("required_fields", [])
-
-            # Constrói o dicionário só com os campos que a crew precisa
-            inputs = {
-                campo: self.state.personal_info.get(campo)
-                for campo in required_fields
-            }
-
-            # ------------------The first the crew is runeed---------------------------------
-            # Run the content crew for this section
-            result = CREWS.get(section.lower())(inputs=inputs) 
-            # Make shore every section response comes with a title
-            #---------------------------------------------------------------------------------
-            
-
-            #Consider a set of questions that could be returned by a crew ??????????????
-
-            # Store the content
-            self.state.sections_content[section] = result.raw
-            completed_sections.append(section)
-            print(f"Section completed: {section}")
-
-
-        # Compile the final guide
-        guide_content = f"# Your Personalized Erasmus Guide\n\n"
-
-        # Add each section in order
-        for section in state.sections:
-            section_content = self.state.sections_content.get(section, "")
-            guide_content += f"\n\n{section_content}\n\n"
-
-        # Save the guide
-        with open("output/complete_guide.md", "w") as f:
+        os.makedirs("output", exist_ok=True)
+        with open("output/complete_guide.md", "w", encoding="utf-8") as f:
             f.write(guide_content)
 
         print("\nComplete guide compiled and saved to output/complete_guide.md")
         return self.state
 
+# For finances, housing, commute case, we will need a different approach
+# The crew for finances returns a structured output for entertainment and groceries. Use the housing e commute value to complete the section
+# It would be good if commute e housing came structured too, so it can be easier to have our disired layout
 
 
     @listen(write_and_compile_guide)
@@ -142,16 +167,9 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
 
                 print("Invalid choice. Please type a number from the list or the section name.")
 
-# Add two more agent for crew. One that will be responsible for recieving the complain 
-# and write a good correction request and redirect it to the corection_agent. 
-# Not to the first search_agent because we would have to add more points in that agent goal 
-# and at same time, add more placeholders in the description. Having a big context for an agent with
-# a free LLM model wont work
-
 
         return
         
-
 
 def kickoff():
     """Run the guide creator flow"""
