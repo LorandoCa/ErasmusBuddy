@@ -23,6 +23,19 @@ MAX_CONCURRENT_CREWS = 2
 MAX_ROUNDS = 3 
 
 
+USE_PERSONA = True
+
+TEST_PERSONA = {
+    "origin_country": "Poland",
+    "destination_country": "Spain",
+    "origin_university": "Warsaw University of Technology",
+    "city": "Warsaw",
+    "destination_university": "Universidad Politécnica de Madrid",
+    "semester": "Fall 2026",
+}
+
+
+
 # Define our flow state
 class GuideCreatorState(BaseModel):
     personal_info: Dict[str, str] = {}
@@ -37,10 +50,16 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
         """Get input from the user about the guide topic and audience"""
         print("\n=== Create Your Personalized Erasmus Guide ===\n")
 
-        #------------GETTING USER INPUTS----------------------------------------------
-
         info = self.state.personal_info
 
+        if USE_PERSONA:
+            info.update(TEST_PERSONA)
+            print("Using test persona:")
+            for k, v in info.items():
+                print(f"  {k}: {v}")
+            return self.state
+
+        # ------------ GETTING USER INPUTS ------------
         info["origin_country"] = pedir_input("Enter your origin country: ")
 
         while True:
@@ -50,10 +69,9 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
             print("Destination country must be different from origin country.")
 
         info["origin_university"] = pedir_input("Enter your origin university: ")
+        info["city"] = pedir_input("Enter your origin city: ")
         info["destination_university"] = pedir_input("Enter your destination university: ")
         info["semester"] = pedir_input("Enter your semester (e.g., Fall 2024): ")
-        #Insert HERE another necessary input information for the Erasmus guide
-        #-------------------------------------------------------------------------------
     
         print(f"\nCreating a guide for a student from {info['origin_country']} going to {info['destination_country']}...\n")
         return self.state
@@ -99,6 +117,7 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
                     completed.append(section)  # do not retry a crash forever
                     continue
 
+                print("Going to extract questions\n\n")
                 questions = extract_questions(section, outcome) # Define an agent responsible for colecting those questions
                 if questions:
                     asked_questions[section] = questions

@@ -1,7 +1,7 @@
 {
   "bureaucracy": {
     "function": "kickoff_bureaucracy_crew",
-    "required_fields": ["origin_country", "destination_country", "origin_university", "destination_university", "semester"],
+    "required_fields": ["origin_country", "destination_country", "city", "origin_university", "destination_university", "semester"],
     "comments": "This crew handles the bureaucracy section. Add other crews here as needed."
   },
   "bureaucracy_repair": { 
@@ -11,6 +11,6 @@
   },
   "finances": {
     "function": "kickoff_finances_crew",
-    "required_fields": ["city", "country"]
+    "required_fields": ["city", "destination_country"]
   }
 }

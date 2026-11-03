@@ -3,7 +3,7 @@
   "name": "Report_crew",
 
   // Agents to include — each must have a matching agents/<name>.jsonc file
-  "agents": ["search_info", "create_report"],
+  "agents": ["Search_info", "Create_report"],
 
   // Task definitions — executed in order for sequential process
   "tasks": [
@@ -13,10 +13,9 @@
 
       // What the task should accomplish
       // Use {placeholder} inputs here; crewai run prompts for missing values
-      "description": "Your goal is to build a checklist for an Erasmus+ student who has ALREADY been accepted and is ARRIVING in {city}, {country} (destination country, not the home country). Your PRIMARY source is the official Erasmus+ website of {country} (the national agency / official Erasmus+ portal for incoming students). Explore it in depth: do not stop at the homepage or at search snippets. Open and read the sections addressed to incoming / international students (for example 'incoming students', 'study in {country}', 'before you arrive', 'after arrival', 'practical information', 'living in {country}') and follow their internal links to the relevant subpages. Organize what you find into three parts. PART 1, arrival 'must do' list: extract ONLY what this official source recommends or requires that incoming students do when preparing to arrive and after arrival (for example registration with local authorities, residence or registration certificate, tax number, health insurance, housing registration, and similar tasks). PART 2, public transport: find all documents and steps required to get a public transport card or pass in {city} (operator name, where to apply, required documents, student discount conditions). PART 3, other relevant information: collect every other piece of information that the official Erasmus+ website of {country} (and, as a complement, the official portals of the universities and of the city of {city}) presents as useful for incoming Erasmus+ students and that does not fit in parts 1 and 2. Examples: accommodation options and support, health care and emergency numbers, student support services, orientation or welcome programmes, buddy or mentoring programmes, language courses, cultural and social activities, practical living information. Include an item only if an official source presents it to incoming students; do not add generic advice from your own knowledge. DO NOT include application procedures, eligibility criteria, application deadlines, selection criteria, or grants. Ignore any page that only covers those topics. Every item must be backed by an official source link; if you cannot find an official source for an item, say so instead of guessing. If you need information from the student (for example nationality, whether they are EU citizen, duration of stay, university name), prepare one structured, numbered list with all your questions and delegate it to the coworker with the role 'Create a report given by a fellow agent', passing the complete list in the request. Wait for the answers, then continue. Do this at most 3 times. Final output: the structured checklist with source links.",      
-      // Clear definition of what the output should look like
-      "expected_output": "A markdown document with three sections: (1) Arrival 'must do' checklist for {city}, {country}, based on the official Erasmus+ website of {country}, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students (accommodation, health, student support, orientation, language courses, practical living information, and similar topics found on official sources). Each item has a short description and an official source link. No information about applying to Erasmus, eligibility or deadlines.",      // Optional task guardrail(s) validate output before completion
-      // Use "guardrail" for one rule or "guardrails" for many
+      "description": "Your goal is to build a checklist for an Erasmus+ student who has ALREADY been accepted and is ARRIVING in {city}, {destination_country} (destination country, not the home country). Your PRIMARY source is the official Erasmus+ website of {destination_country} (the national agency / official Erasmus+ portal for incoming students). Explore it in depth: do not stop at the homepage or at search snippets. Open and read the sections addressed to incoming / international students (for example 'incoming students', 'study in {destination_country}', 'before you arrive', 'after arrival', 'practical information', 'living in {destination_country}') and follow their internal links to the relevant subpages. Organize what you find into three parts. PART 1, arrival 'must do' list: extract ONLY what this official source recommends or requires that incoming students do when preparing to arrive and after arrival (for example registration with local authorities, residence or registration certificate, tax number, health insurance, housing registration, and similar tasks). PART 2, public transport: find all documents and steps required to get a public transport card or pass in {city} (operator name, where to apply, required documents, student discount conditions). PART 3, other relevant information: collect every other piece of information that the official Erasmus+ website of {destination_country} (and, as a complement, the official portals of the universities and of the city of {city}) presents as useful for incoming Erasmus+ students and that does not fit in parts 1 and 2. Examples: accommodation options and support, health care and emergency numbers, student support services, orientation or welcome programmes, buddy or mentoring programmes, language courses, cultural and social activities, practical living information. Include an item only if an official source presents it to incoming students; do not add generic advice from your own knowledge. DO NOT include application procedures, eligibility criteria, application deadlines, selection criteria, or grants. Ignore any page that only covers those topics. Every item must be backed by an official source link; if you cannot find an official source for an item, say so instead of guessing. If you need information from the student that you cannot find (for example nationality, whether they are an EU citizen, duration of stay), check first whether it is already in {student_answers}. If it is still missing, do NOT continue the research and do NOT try to ask anyone. Your ENTIRE output must then be only a numbered list of questions wrapped between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no research and no other text. If you have everything you need, ignore this rule and produce the full research output. Wait for the answers, then continue. Do this at most 3 times. Final output: the structured checklist with source links.",      // Clear definition of what the output should look like
+      
+      "expected_output": "MODE A (information missing): ONLY a numbered list of questions in the format '1. Question? (Reason: ...)' between the lines <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no research and no other text. MODE B (nothing missing): ONLY a markdown document with three sections: (1) Arrival 'must do' checklist for {city}, {destination_country}, based on the official Erasmus+ website of {destination_country}, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students (accommodation, health, student support, orientation, language courses, practical living information, and similar topics found on official sources). Each item has a short description and an official source link. No information about applying to Erasmus, eligibility or deadlines. No question markers in MODE B.",      // Use "guardrail" for one rule or "guardrails" for many
       // Failed guardrails retry up to guardrail_max_retries times
       // "guardrail": "Every factual claim needs context support.",
       // "guardrails": [
@@ -38,13 +37,13 @@
       // "security_config": {},
 
       // Which agent handles this task
-      "agent": "search_info",
+      "agent": "Search_info"
 
       // "tools": [],
       // "human_input": false,
       // "async_execution": false
 
-       "output_file": "output/report.md"
+      //"output_file": "output/report.md"
 
     }
 ,
@@ -54,9 +53,9 @@
 
       // What the task should accomplish
       // Use {placeholder} inputs here; crewai run prompts for missing values
-      "description": "You have two responsibilities. (1) Interviewer: whenever a coworker sends you a list of questions for the student, call the ask_user tool ONCE with the complete list, wait for the answers, and return all of them to the coworker exactly as the user gave them. Never invent answers. Use the ask_user tool ONLY in this situation. (2) Report writer: you receive, in your context, the research output of the previous task about what an incoming Erasmus+ student must do in {city}, {country}. Turn it into a clear, well-organized final report in markdown with three sections: (1) Arrival 'must do' checklist, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students. Use ONLY the information from the research and the user's answers. Do not invent or add facts. Keep every official source link next to the item it supports. Keep all items from the research. NEVER ask the user for the research text or for the content of the previous task: it is already in your context. If an item has no official source, mark it as 'source not confirmed'. Write the report in English.",
+      "description": "You have NO tool to talk to the user and must NEVER try to ask the student anything directly. Look at the output of the previous task in your context and decide which mode applies. MODE A: if it contains questions wrapped between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, do NOT write any report. Collect all questions, remove duplicates, merge similar ones, rewrite them in clear and simple English, group related ones, and return them as one numbered list in the format '1. Question? (Reason: ...)' wrapped between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>. Do not add questions that are not in the previous output. Output nothing else. MODE B: if there are no questions, write the final report. Turn the research into a clear, well-organized markdown report for an incoming Erasmus+ student in {city}, {destination_country}, with three sections: (1) Arrival 'must do' checklist, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students. Use ONLY the information from the research and from {student_answers}. Do not invent or add facts. Keep every official source link next to the item it supports. Keep all items from the research. If an item has no official source, mark it as 'source not confirmed'. NEVER ask for the research text: it is already in your context. In MODE B never output the question markers. Write everything in English.",
 
-      "expected_output": "The complete final markdown document, not a summary and not comments about the document. It has a title, a short introduction, and three sections: (1) Arrival 'must do' checklist for {city}, {country}, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students. Each item has a short explanation and its official source link. All items from the research are included. No information about applying to Erasmus, eligibility or deadlines.", // Optional task guardrail(s) validate output before completion
+      "expected_output": "MODE A (questions pending): ONLY a numbered list of questions in the format '1. Question? (Reason: ...)' between the lines <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no report and no other text. MODE B (no questions): ONLY the complete final markdown report (not a summary and not comments about it), with a title, a short introduction, and three sections: (1) Arrival 'must do' checklist for {city}, {destination_country}, (2) Documents and steps required for a public transport card in {city}, (3) Other relevant information for incoming Erasmus+ students. Each item has a short explanation and its official source link. All items from the research are included. No information about applying to Erasmus, eligibility or deadlines. No question markers.",
       // Use "guardrail" for one rule or "guardrails" for many
       // Failed guardrails retry up to guardrail_max_retries times
       // "guardrail": "Every factual claim needs context support.",
@@ -79,13 +78,13 @@
       // "security_config": {},
 
       // Which agent handles this task
-      "agent": "create_report",
+      "agent": "Create_report"
 
       // "tools": [],
       // "human_input": false,
       // "async_execution": false
 
-       "output_file": "output/Erasmus_Application_Guide.md"
+      //"output_file": "output/Erasmus_Application_Guide.md"
     }
 
   ],
