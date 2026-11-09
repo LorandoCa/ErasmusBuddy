@@ -9,7 +9,7 @@ from crewai.flow.flow import Flow, listen, start
 
 
 #---------------IMPORTED--------------------
-from Flow_functions import pedir_input, run_bureaucracy, run_finances # should be later defined as a tool
+from Flow_functions import pedir_input, run_bureaucracy, run_finances, extract_questions, collect_user_answers # should be later defined as a tool
 import json
 #--------------------------------------
 
@@ -29,7 +29,8 @@ TEST_PERSONA = {
     "origin_country": "Poland",
     "destination_country": "Spain",
     "origin_university": "Warsaw University of Technology",
-    "city": "Warsaw",
+    "origin_city": "Madrid",
+    "destination_city": "Madrid",
     "destination_university": "Universidad Politécnica de Madrid",
     "semester": "Fall 2026",
 }
@@ -39,6 +40,7 @@ TEST_PERSONA = {
 # Define our flow state
 class GuideCreatorState(BaseModel):
     personal_info: Dict[str, str] = {}
+    student_answers: Dict[str, Dict[str, str]] = {} # section -> question -> answer
     sections: List[str] = ["bureaucracy"] #"Finance", "Housing", "Commute" add them when you have the correspondent agents
     sections_content: Dict[str, str] = {}
 
@@ -69,7 +71,8 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
             print("Destination country must be different from origin country.")
 
         info["origin_university"] = pedir_input("Enter your origin university: ")
-        info["city"] = pedir_input("Enter your origin city: ")
+        info["origin_city"] = pedir_input("Enter your origin city: ")
+        info["destination_city"] = pedir_input("Enter your destination city: ")
         info["destination_university"] = pedir_input("Enter your destination university: ")
         info["semester"] = pedir_input("Enter your semester (e.g., Fall 2024): ")
     
@@ -99,7 +102,7 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
                 )
 
         for round_number in range(1, MAX_ROUNDS + 1):
-            pending = [s for s in state.sections if s not in completed]
+            pending = [s for s in self.state.sections if s not in completed]
             if not pending:
                 break
 
@@ -131,17 +134,20 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
 
             # Sequential on purpose: prompts from different crews must not interleave
             for section, questions in asked_questions.items():
-                extra_inputs[section] = collect_user_answers(section, questions) # Define a function that will be responsible for collecting answers
+                extra_inputs.setdefault(section, {}).update(collect_user_answers(section, questions))
                 # IMPORTANT: Concat the question with the answer
+                # collect_user_answers tem de devolver um dict com a pergunta e a resposta, para que possamos concatenar e enviar de volta para o crew
         else:
             print(f"Reached MAX_ROUNDS ({MAX_ROUNDS}) with unfinished sections: "
-                f"{[s for s in state.sections if s not in completed]}")
+                f"{[s for s in self.state.sections if s not in completed]}")
+
+            # Make shure the result is saved even if we reach the max rounds, so we can have a partial guide
 
 
 
 
         guide_content = "# Your Personalized Erasmus Guide\n\n"
-        for section in state.sections:
+        for section in self.state.sections:
             guide_content += f"\n\n{self.state.sections_content.get(section, '')}\n\n"
 
         os.makedirs("output", exist_ok=True)

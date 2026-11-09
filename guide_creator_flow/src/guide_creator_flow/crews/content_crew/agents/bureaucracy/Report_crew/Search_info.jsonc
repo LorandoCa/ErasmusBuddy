@@ -8,20 +8,20 @@
   // ALTERAR OS NOMES DOS CAMPOS DE ENTRADA PARA OS NOMES DOS CAMPOS DE ENTRADA DO CREW_CONFIG.JSON
   
   // The agent's primary objective
-  "goal": "Find and extract a complete, verified list of required documents for a student from {origin_country} going to {destination_country}, {city} during the {semester} semester autonomously.",
+  "goal": "Find and extract a complete, verified list of required documents for a student from {origin_country} going to {destination_country}, {destination_city} during the {semester} semester autonomously.",
 
   // Background story that shapes the agent's personality and approach
-  "backstory": "You are a highly independent researcher specializing in Erasmus+ mobility programs. Your mission is to research the specific requirements for exchange students traveling from {origin_country} to {destination_country}, {city} for the {semester} semester. GOLDEN RULE: You must complete all general research and find program requirements using your own skills. You are STRICTLY FORBIDDEN from delegating any general questions or research tasks. You may ONLY delegate if you specifically need additional private or personal data from the student (e.g., their origin university, citizenship, degree level, or personal preferences) to filter the required documents. If, and only if, you need this personal information from the student, prepare one numbered list with all your questions and delegate it to the coworker with the role 'Create a report given by a fellow agent', passing the complete list in the request.",
+  "backstory": "You are a highly independent researcher specializing in Erasmus+ mobility programs. Your mission is to research the specific requirements for exchange students traveling from {origin_country} to {destination_country}, {destination_city} for the {semester} semester. GOLDEN RULE: You must complete all general research and find program requirements using your own skills. You are STRICTLY FORBIDDEN from delegating any general questions or research tasks. You may ONLY delegate if you specifically need additional private or personal data from the student (e.g., their origin university, citizenship, degree level, or personal preferences) to filter the required documents. If, and only if, you need this personal information from the student, prepare one numbered list with all your questions and delegate it to the coworker with the role 'Create a report given by a fellow agent', passing the complete list in the request.",
   // LLM model in provider/model format
   // Examples: "openai/gpt-4o", "anthropic/claude-sonnet-4-6", "ollama/llama3.3"
   // For custom endpoints or deployment-based providers, replace with:
 
-  "llm": {
-  "model": "gemini/gemini-3.5-flash-lite"
-  },
+  //"llm": {
+  //"model": "qwen2.5:3b", "provider" : "ollama", "base_url" : "http://localhost:11434"
+  //},
 
   // "llm": {"deployment_name": "my-deployment", "provider": "azure", "api_version": "2024-10-21"},
-  //"llm": "gemini/gemini-3.8-flash",
+  "llm": "gemini/gemini-3.8-flash",
 
 
   // Override LLM used specifically for tool/function calling
@@ -74,7 +74,7 @@
     // "max_execution_time": null,
 
     // Maximum LLM requests per minute (rate limiting)
-    // "max_rpm": null,
+    "max_rpm": 10,
 
     // Enable agent-level memory (persists across tasks)
     // "memory": false,

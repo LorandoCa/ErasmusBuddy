@@ -1,8 +1,8 @@
 {
   "bureaucracy": {
     "function": "kickoff_bureaucracy_crew",
-    "required_fields": ["origin_country", "destination_country", "city", "origin_university", "destination_university", "semester"],
-    "comments": "This crew handles the bureaucracy section. Add other crews here as needed."
+    "required_fields": ["origin_country", "destination_country", "origin_city", "destination_city", "origin_university", "destination_university", "semester"],
+    "comments": "This crew handles the bureaucracy section. Add other crews here as needed. IMPORTANT: city corresponds to the city of the destination university."
   },
   "bureaucracy_repair": { 
     "function": "kickoff_bureaucracy_crew_repair",
@@ -11,6 +11,6 @@
   },
   "finances": {
     "function": "kickoff_finances_crew",
-    "required_fields": ["city", "destination_country"]
+    "required_fields": ["origin_city", "destination_city", "destination_country"]
   }
 }
