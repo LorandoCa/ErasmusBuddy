@@ -1,6 +1,0 @@
-# Your Personalized Erasmus Guide
-
-
-
-
-

@@ -9,7 +9,28 @@ from crewai.flow.flow import Flow, listen, start
 
 
 #---------------IMPORTED--------------------
-from Flow_functions import pedir_input, run_bureaucracy, run_finances, extract_questions, collect_user_answers # should be later defined as a tool
+try:
+    from guide_creator_flow.Flow_functions import (
+        pedir_input,
+        run_bureaucracy,
+        run_finances,
+        run_commute,
+        run_housing,
+        extract_questions,
+        collect_user_answers,
+        extract_content,
+    )
+except ImportError:
+    from Flow_functions import (
+        pedir_input,
+        run_bureaucracy,
+        run_finances,
+        run_commute,
+        run_housing,
+        extract_questions,
+        collect_user_answers,
+        extract_content,
+    )
 import json
 #--------------------------------------
 
@@ -17,7 +38,9 @@ import json
 # Define our global variables
 SECTION_RUNNERS = {
     "bureaucracy": run_bureaucracy, # Add later the feedback crew
-    "finances": run_finances
+    "finances": run_finances,
+    "commute": run_commute,
+    "housing": run_housing,
 }
 MAX_CONCURRENT_CREWS = 2
 MAX_ROUNDS = 3 
@@ -26,12 +49,12 @@ MAX_ROUNDS = 3
 USE_PERSONA = True
 
 TEST_PERSONA = {
-    "origin_country": "Poland",
-    "destination_country": "Spain",
-    "origin_university": "Warsaw University of Technology",
+    "origin_country": "Spain",
+    "destination_country": "Portugal",
+    "origin_university": "Universidad Complutense de Madrid",
     "origin_city": "Madrid",
-    "destination_city": "Madrid",
-    "destination_university": "Universidad Politécnica de Madrid",
+    "destination_city": "coimbra",
+    "destination_university": "Univerisidade de Coimbra",
     "semester": "Fall 2026",
 }
 
@@ -41,7 +64,7 @@ TEST_PERSONA = {
 class GuideCreatorState(BaseModel):
     personal_info: Dict[str, str] = {}
     student_answers: Dict[str, Dict[str, str]] = {} # section -> question -> answer
-    sections: List[str] = ["bureaucracy"] #"Finance", "Housing", "Commute" add them when you have the correspondent agents
+    sections: List[str] = ["bureaucracy", "commute", "housing", ]
     sections_content: Dict[str, str] = {}
 
 class GuideCreatorFlow(Flow[GuideCreatorState]):
@@ -84,7 +107,11 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
     async def write_and_compile_guide(self, state):
         print("Writing guide sections and compiling...")
 
-        with open("crews_config.json", encoding="utf-8") as f:
+        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "crews_config.json")
+        if not os.path.exists(config_path):
+            config_path = "crews_config.json"
+
+        with open(config_path, encoding="utf-8") as f:
             crews_config = json.load(f)
 
         semaphore = asyncio.Semaphore(MAX_CONCURRENT_CREWS)
@@ -125,7 +152,9 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
                 if questions:
                     asked_questions[section] = questions
                 else:
-                    self.state.sections_content[section] = outcome.raw
+                    self.state.sections_content[section] = extract_content(
+                        section, outcome, self.state.personal_info
+                    )
                     completed.append(section)
                     print(f"Section completed: {section}")
 
@@ -142,8 +171,6 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
                 f"{[s for s in self.state.sections if s not in completed]}")
 
             # Make shure the result is saved even if we reach the max rounds, so we can have a partial guide
-
-
 
 
         guide_content = "# Your Personalized Erasmus Guide\n\n"
@@ -164,18 +191,26 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
 
     @listen(write_and_compile_guide)
     def feedback_loop(self, state):
-        """Recieve users questions/complains and apply them"""
+        """Receive users questions/complaints and apply them via repair crew"""
+        try:
+            from guide_creator_flow.crews.content_crew.content_crew import kickoff_bureaucracy_crew_repair
+        except ImportError:
+            from crews.content_crew.content_crew import kickoff_bureaucracy_crew_repair
 
         correction = input("Is there any section that is not on your expectations? Y/N: ").strip().upper()
 
-        section = ""
         if correction == 'Y':
             sections = list(self.state.sections_content.keys())
+
+            if not sections:
+                print("No sections available to correct.")
+                return self.state
 
             print("\nAvailable sections:")
             for i, nome in enumerate(sections, start=1):
                 print(f"  {i}. {nome}")
 
+            section = ""
             while True:
                 escolha = input("\nWhich section do you want to correct? (number or name): ").strip()
 
@@ -192,8 +227,29 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
 
                 print("Invalid choice. Please type a number from the list or the section name.")
 
+            user_complaint = input(f"\nWhat would you like to improve or correct in section '{section}'?\n> ").strip()
+            if user_complaint:
+                print(f"\nApplying corrections to section '{section}'...")
+                repair_inputs = {
+                    "section": section,
+                    "section_content": self.state.sections_content.get(section, ""),
+                    "user_request": user_complaint,
+                }
+                repair_outcome = kickoff_bureaucracy_crew_repair(repair_inputs)
+                corrected_text = getattr(repair_outcome, "raw", str(repair_outcome))
+                if corrected_text:
+                    self.state.sections_content[section] = corrected_text
 
-        return
+                    # Recompilar o guia completo com a secção corrigida
+                    guide_content = "# Your Personalized Erasmus Guide\n\n"
+                    for s in self.state.sections:
+                        guide_content += f"\n\n{self.state.sections_content.get(s, '')}\n\n"
+
+                    with open("output/complete_guide.md", "w", encoding="utf-8") as f:
+                        f.write(guide_content)
+                    print(f"\nSection '{section}' successfully updated and saved in output/complete_guide.md!")
+
+        return self.state
         
 
 def kickoff():

@@ -7,7 +7,9 @@ AGENTS_DIR = Path(__file__).resolve().parent / "agents"
 CREW_FILES = {
     "bureaucracy": AGENTS_DIR / "bureaucracy" / "Report_crew" / "crew_bureaucracy.jsonc",
     "bureaucracy_repair": AGENTS_DIR / "bureaucracy" / "Feedback_crew" / "crew_bureaucracy_repair.jsonc",
-    "finances": AGENTS_DIR / "finances" / "finances_crew.jsonc"
+    "finances": AGENTS_DIR / "finances" / "finances_crew.jsonc",
+    "commute": AGENTS_DIR / "commute" / "crew_commute.jsonc",
+    "housing": AGENTS_DIR / "housing" / "crew_housing.jsonc"
 }
 
 
@@ -31,3 +33,11 @@ def kickoff_bureaucracy_crew_repair(inputs: dict):
 
 def kickoff_finances_crew(inputs: dict):
     return kickoff_crew("finances", inputs)
+
+
+def kickoff_commute_crew(inputs: dict):
+    return kickoff_crew("commute", inputs)
+
+
+def kickoff_housing_crew(inputs: dict):
+    return kickoff_crew("housing", inputs)

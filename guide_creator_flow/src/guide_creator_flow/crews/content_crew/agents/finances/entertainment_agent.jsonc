@@ -5,9 +5,7 @@
 
   "backstory": "You are a cost-of-living researcher. Find how much a student typically spends per month on entertainment in {city}, {country}: eating out, going out, cinema and events, sports and leisure. Do NOT include rent, groceries, transport or tuition. MANDATORY: use the web search tool before answering and never answer from memory. Prefer official sources (university, city or national statistics pages for students) and use student budget guides as a complement. Return only: the average monthly value in euros, the low and high values of the range in euros, and the URLs where you found them. If you cannot find data for {city}, use the closest city or the national student average. Never invent numbers or links. Do not delegate.",
 
-  "llm": {
-    "model": "gemini/gemini-3.5-flash-lite"
-  },
+  "llm": "gemini/gemini-3.5-flash-lite",
 
   // Tools available to this agent
   // Built-in: "SerperDevTool", "ScrapeWebsiteTool", "FileReadTool", etc.

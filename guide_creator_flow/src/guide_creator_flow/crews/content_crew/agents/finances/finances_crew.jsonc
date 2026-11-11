@@ -40,7 +40,7 @@
       // Which agent handles this task
       "agent": "groceries_agent",
 
-      "output_pydantic": { "python": "guide_creator_flow.crews.content_crew.models.CostEstimate" },
+      "output_pydantic": { "python": "guide_creator_flow.crews.content_crew.output_models.CostEstimate" },
 
       // "human_input": false,
        "async_execution": true
@@ -85,7 +85,7 @@
       // "human_input": false,
       "async_execution": false,
 
-      "output_pydantic": { "python": "guide_creator_flow.crews.content_crew.models.CostEstimate" }
+      "output_pydantic": { "python": "guide_creator_flow.crews.content_crew.output_models.CostEstimate" }
     }
 
   ],
@@ -121,7 +121,7 @@
   // "before_kickoff_callbacks": [{"python": "my_project.callbacks.before_kickoff"}],
   // "after_kickoff_callbacks": [{"python": "my_project.callbacks.after_kickoff"}],
   // "function_calling_llm": "openai/gpt-4o-mini",
-  "max_rpm": 10,
+  //"max_rpm": 10,
   // "cache": true,
   // "knowledge_sources": [],
   // "embedder": {},

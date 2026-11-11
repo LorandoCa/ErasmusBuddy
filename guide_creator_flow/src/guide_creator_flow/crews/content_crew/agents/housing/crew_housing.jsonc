@@ -1,0 +1,17 @@
+{
+  "name": "Housing_crew",
+
+  "agents": ["housing_agent"],
+
+  "tasks": [
+    {
+      "name": "housing_research_and_guide_task",
+      "description": "Your goal is to build the Housing and Accommodation guide for an incoming Erasmus+ student arriving in {destination_city}, {destination_country} who will study at {destination_university} during the {semester} semester.\n\nFirst, check whether you need specific private preferences from the student that would change your advice (e.g., preferred accommodation type: room in shared flat, university student residence, or studio; or maximum rent budget). Check first whether these details are already answered in {extra_inputs} (which may be empty).\n\nIf essential details are still missing, do NOT continue the research and do NOT guess. Your ENTIRE output must then be only a numbered list of at most 3 clear questions wrapped between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no other text.\n\nIf you have all necessary information (or information is in {extra_inputs}), explore official and student housing sources for {destination_city} using your search tool and cover:\n1. ACCOMMODATION TYPES & REALISTIC COSTS: Typical monthly rent ranges in euros in {destination_city} for (a) a single room in a shared student flat, (b) a room in a public or private student residence, (c) an individual studio. State whether utilities (water, electricity, heating, Wi-Fi) are usually included or separate.\n2. BEST STUDENT NEIGHBORHOODS: Safe, vibrant districts popular among students, with direct transport or walking distance to {destination_university}.\n3. TRUSTED HOUSING PLATFORMS & UNIVERSITY SUPPORT: Official university accommodation offices, verified student housing portals (e.g. university halls, certified platforms), when to start applying, and official links.\n4. CONTRACTS, DEPOSITS & SCAM PREVENTION: Key legal points, standard security deposits, tenant rights, and red flags / scams international students must avoid.\n\nEvery item must include verified source links. Write everything in clear English formatted in Markdown.",
+      "expected_output": "MODE A (information missing): ONLY a numbered list of questions in the format '1. Question? (Reason: ...)' between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no other text.\nMODE B (nothing missing): ONLY a clean markdown document titled '## Housing and Accommodation in {destination_city}' with sections: (1) Housing Types and Average Monthly Costs (in €), (2) Recommended Student Neighborhoods near {destination_university}, (3) Trusted Housing Portals & University Housing Services, (4) Rental Contracts, Deposits and Avoiding Scams. Each item must include short explanation and official or trusted source links. No question markers in MODE B.",
+      "agent": "housing_agent"
+    }
+  ],
+
+  "process": "sequential",
+  "verbose": true
+}

@@ -21,7 +21,7 @@
   //},
 
   // "llm": {"deployment_name": "my-deployment", "provider": "azure", "api_version": "2024-10-21"},
-  "llm": "gemini/gemini-3.8-flash",
+  "llm": "gemini/gemini-3.5-flash-lite",
 
 
   // Override LLM used specifically for tool/function calling
@@ -74,7 +74,7 @@
     // "max_execution_time": null,
 
     // Maximum LLM requests per minute (rate limiting)
-    "max_rpm": 10,
+    //"max_rpm": 10,
 
     // Enable agent-level memory (persists across tasks)
     // "memory": false,

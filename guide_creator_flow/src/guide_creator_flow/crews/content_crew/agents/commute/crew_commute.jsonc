@@ -1,0 +1,17 @@
+{
+  "name": "Commute_crew",
+
+  "agents": ["commute_agent"],
+
+  "tasks": [
+    {
+      "name": "commute_research_and_guide_task",
+      "description": "Your goal is to build the Commute and Local Transport guide for an incoming Erasmus+ student arriving in {destination_city}, {destination_country} who will study at {destination_university} during the {semester} semester.\n\nFirst, check whether you need specific private preferences from the student that would change your advice (e.g., student age for youth transport pass discounts, whether they bring a bicycle or car, or preference for public transport vs. cycling). Check first whether these details are already answered in {extra_inputs} (which may be empty).\n\nIf essential details are still missing, do NOT continue the research and do NOT guess. Your ENTIRE output must then be only a numbered list of at most 3 clear questions wrapped between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no other text.\n\nIf you have all necessary information (or information is in {extra_inputs}), explore official transit sources for {destination_city} using your search tool and cover:\n1. PUBLIC TRANSPORT NETWORK: Main transit operators (metro, bus, tram, suburban train) connecting residential student areas to {destination_university}.\n2. STUDENT PASSES & CARDS: Exact pass names, eligibility criteria, student/youth discounts, monthly and semester pass prices in euros, required documents, and official link where to apply.\n3. CYCLING & ALTERNATIVE COMMUTE: Public bike-sharing system names, subscription costs, cycling conditions to campus, and walking tips.\n4. ESTIMATED MONTHLY COMMUTE BUDGET: Estimated average monthly transit expenditure in euros.\n\nEvery item must include the official website source link. Write everything in clear English formatted in Markdown.",
+      "expected_output": "MODE A (information missing): ONLY a numbered list of questions in the format '1. Question? (Reason: ...)' between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no other text.\nMODE B (nothing missing): ONLY a clean markdown document titled '## Commute and Public Transportation in {destination_city}' with sections: (1) Transit Network & Access to {destination_university}, (2) Student Passes, Cards and Discounts, (3) Cycling and Alternative Mobility, (4) Estimated Monthly Transport Budget (with average/range in €). Each item must include short explanation and official source links. No question markers in MODE B.",
+      "agent": "commute_agent"
+    }
+  ],
+
+  "process": "sequential",
+  "verbose": true
+}

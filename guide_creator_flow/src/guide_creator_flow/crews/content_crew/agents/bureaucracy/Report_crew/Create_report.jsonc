@@ -18,7 +18,7 @@
   // For custom endpoints or deployment-based providers, replace with:
   //"llm": {"model": "qwen3.5:35b-a3b-q4_K_M", "provider": "ollama", "base_url": "https://actor-involve-harold-confident.trycloudflare.com"},
   // "llm": {"deployment_name": "my-deployment", "provider": "azure", "api_version": "2024-10-21"},
-  "llm": "gemini/gemini-3.8-flash",
+  "llm": "gemini/gemini-3.5-flash-lite",
 
 
   //"llm": {
@@ -75,7 +75,7 @@
     // "max_execution_time": null,
 
     // Maximum LLM requests per minute (rate limiting)
-    "max_rpm": 10,
+    //"max_rpm": 10,
 
     // Enable agent-level memory (persists across tasks)
     // "memory": false,

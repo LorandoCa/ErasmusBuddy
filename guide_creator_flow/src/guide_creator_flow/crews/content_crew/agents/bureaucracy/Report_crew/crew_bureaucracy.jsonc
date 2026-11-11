@@ -11,87 +11,43 @@
       // Task identifier
       "name": "search_the_official_erasmus_task",
 
-      // What the task should accomplish
-      // Use {placeholder} inputs here; crewai run prompts for missing values
-      "description": "Your goal is to build a checklist for an Erasmus+ student who has ALREADY been accepted and is ARRIVING in {destination_city}, {destination_country} (destination country, not the home country). Your PRIMARY source is the official Erasmus+ website of {destination_country} (the national agency / official Erasmus+ portal for incoming students). Explore it in depth: do not stop at the homepage or at search snippets. Open and read the sections addressed to incoming / international students (for example 'incoming students', 'study in {destination_country}', 'before you arrive', 'after arrival', 'practical information', 'living in {destination_country}') and follow their internal links to the relevant subpages. Organize what you find into three parts. PART 1, arrival 'must do' list: extract ONLY what this official source recommends or requires that incoming students do when preparing to arrive and after arrival (for example registration with local authorities, residence or registration certificate, tax number, health insurance, housing registration, and similar tasks). PART 2, public transport: find all documents and steps required to get a public transport card or pass in {destination_city} (operator name, where to apply, required documents, student discount conditions). PART 3, other relevant information: collect every other piece of information that the official Erasmus+ website of {destination_country} (and, as a complement, the official portals of the universities and of the city of {destination_city}) presents as useful for incoming Erasmus+ students and that does not fit in parts 1 and 2. Examples: accommodation options and support, health care and emergency numbers, student support services, orientation or welcome programmes, buddy or mentoring programmes, language courses, cultural and social activities, practical living information. Include an item only if an official source presents it to incoming students; do not add generic advice from your own knowledge. DO NOT include application procedures, eligibility criteria, application deadlines, selection criteria, or grants. Ignore any page that only covers those topics. Every item must be backed by an official source link; if you cannot find an official source for an item, say so instead of guessing. If you need information from the student that you cannot find (for example nationality, whether they are an EU citizen, duration of stay), check first whether it is already in this {extra_inputs} (may be empty). If it is still missing, do NOT continue the research and do NOT try to ask anyone. Your ENTIRE output must then be only a numbered list of questions wrapped between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no research and no other text. If you have everything you need, ignore this rule and produce the full research output. Wait for the answers, then continue. Do this at most 3 times. Final output: the structured checklist with source links.",      // Clear definition of what the output should look like
-      
-      "expected_output": "MODE A (information missing): ONLY a numbered list of questions in the format '1. Question? (Reason: ...)' between the lines <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no research and no other text. MODE B (nothing missing): ONLY a markdown document with three sections: (1) Arrival 'must do' checklist for {destination_city}, {destination_country}, based on the official Erasmus+ website of {destination_country}, (2) Documents and steps required for a public transport card in {destination_city}, (3) Other relevant information for incoming Erasmus+ students (accommodation, health, student support, orientation, language courses, practical living information, and similar topics found on official sources). Each item has a short description and an official source link. No information about applying to Erasmus, eligibility or deadlines. No question markers in MODE B.",      // Use "guardrail" for one rule or "guardrails" for many
-      // Failed guardrails retry up to guardrail_max_retries times
-      // "guardrail": "Every factual claim needs context support.",
-      // "guardrails": [
-      //   "Every factual claim must be supported by context.",
-      //   "The answer must match the expected output format."
-      // ],
-      // "guardrail_max_retries": 2,
+      // What the task should accomplish.
+      // Returns BureaucracyThinking (questions) if personal info is missing,
+      // or proceeds with research if {extra_inputs} already has what is needed.
+      "description": "Research the official Erasmus+ website of {destination_country} and the official portals of {destination_university} and the city of {destination_city}. Your goal is to gather verified information for an incoming Erasmus+ student arriving in {destination_city}, {destination_country} during {semester}.\n\nBefore starting the full research, decide whether you need personal details from this specific student that would change your findings (e.g. their nationality or EU citizenship status, the exact duration of stay, or any other detail that affects legal obligations). Check {extra_inputs} first — if the answer is already there, proceed with the research.\n\nIf an essential personal detail is still missing after checking {extra_inputs}, STOP immediately. Do NOT guess and do NOT start researching. Return a BureaucracyThinking object whose 'questions' list contains at most 3 short, specific questions.\n\nIf you have everything you need, do the full research and gather:\n- PART 1 — Arrival 'must do' steps: only actions officially required or recommended for incoming students (registration with local authorities, residence certificate, tax number, health insurance, housing registration, etc.).\n- PART 2 — Public transport card: operator name, where to apply, required documents, student discount conditions, official link.\n- PART 3 — Other relevant information: accommodation support, health care, student services, orientation programmes, language courses, cultural activities, practical living info — only if present on official sources.\n\nDO NOT include application procedures, eligibility criteria, deadlines, or grants.",
 
-      // Advanced task options:
-      // Docs: https://docs.crewai.com/concepts/tasks
-      // "type": "ConditionalTask",
-      // "condition": { "python": "my_project.conditions.should_run" },
-      // "output_json": { "python": "my_project.models.ReportOutput" },
-      // "output_pydantic": null,
-      // "response_model": null,
-      // "converter_cls": { "python": "my_project.converters.CustomConverter" },
-      // "markdown": false,
-      // "input_files": { "brief": "data/brief.txt" },
-      // "security_config": {},
+      "expected_output": "If personal information is missing: a BureaucracyThinking object with a 'questions' list (at most 3 items, each with 'text' and 'why'). If nothing is missing: research notes structured as a BureaucracyReport with 'arrival_checklist', 'transport_card_steps', and 'other_info' lists (each ChecklistItem has 'title', 'description', and 'source' URL).",
+
+      // Pydantic output — CrewAI coerces the LLM response into this model.
+      // The researcher returns BureaucracyThinking when questions are needed,
+      // or a BureaucracyReport-shaped response when research is complete.
+      "output_pydantic": { "python": "guide_creator_flow.crews.content_crew.output_models.BureaucracyThinking" },
 
       // Which agent handles this task
       "agent": "Search_info"
-
-      // "tools": [],
-      // "human_input": false,
-      // "async_execution": false
-
-      //"output_file": "output/report.md"
-
-    }
-,
+    },
     {
       // Task identifier
       "name": "collect_the_result_returned_task",
 
-      // What the task should accomplish
-      // Use {placeholder} inputs here; crewai run prompts for missing values
-      "description": "You have NO tool to talk to the user and must NEVER try to ask the student anything directly. Look at the output of the previous task in your context and decide which mode applies. MODE A: if it contains questions wrapped between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, do NOT write any report. Collect all questions, remove duplicates, merge similar ones, rewrite them in clear and simple English, group related ones, and return them as one numbered list in the format '1. Question? (Reason: ...)' wrapped between <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>. Do not add questions that are not in the previous output. Output nothing else. MODE B: if there are no questions, write the final report. Turn the research into a clear, well-organized markdown report for an incoming Erasmus+ student in {destination_city}, {destination_country}, with three sections: (1) Arrival 'must do' checklist, (2) Documents and steps required for a public transport card in {destination_city}, (3) Other relevant information for incoming Erasmus+ students. Use ONLY the information from the research and from {extra_inputs}. Do not invent or add facts. Keep every official source link next to the item it supports. Keep all items from the research. If an item has no official source, mark it as 'source not confirmed'. NEVER ask for the research text: it is already in your context. In MODE B never output the question markers. Write everything in English.",
+      // What the task should accomplish.
+      // Receives the previous task's Pydantic output in context.
+      // PATH A — questions present: clean up and return BureaucracyThinking.
+      // PATH B — research present: build and return the final BureaucracyReport.
+      "description": "Look at the output of the previous task in your context and decide which path to take.\n\nPATH A — If the previous task returned a BureaucracyThinking object (i.e. it has a non-empty 'questions' list): the researcher could not proceed because personal information was missing. You must NOT write a report. Return a BureaucracyThinking object with the same questions, cleaned up: remove duplicates, merge similar ones, rewrite each in clear and simple English, and keep at most 3. Each question must have a 'text' (the question itself) and a 'why' (why the answer matters). Do not add new questions.\n\nPATH B — If the previous task has research content (arrival steps, transport info, other info): write the final structured report. Turn the research into a BureaucracyReport object with three lists:\n- 'arrival_checklist': the official arrival 'must-do' steps for {destination_city}, {destination_country}.\n- 'transport_card_steps': documents and steps required for a public transport card in {destination_city}.\n- 'other_info': other useful information for incoming Erasmus+ students.\nEach item must have 'title' (short action title), 'description' (1–3 sentences), and 'source' (official URL or empty string).\nUse ONLY the information from the previous task and from {extra_inputs}. Do NOT invent facts. Mark items with no official source with source = ''.\nWrite everything in English.",
 
-      "expected_output": "MODE A (questions pending): ONLY a numbered list of questions in the format '1. Question? (Reason: ...)' between the lines <<<QUESTIONS_START>>> and <<<QUESTIONS_END>>>, with no report and no other text. MODE B (no questions): ONLY the complete final markdown report (not a summary and not comments about it), with a title, a short introduction, and three sections: (1) Arrival 'must do' checklist for {destination_city}, {destination_country}, (2) Documents and steps required for a public transport card in {destination_city}, (3) Other relevant information for incoming Erasmus+ students. Each item has a short explanation and its official source link. All items from the research are included. No information about applying to Erasmus, eligibility or deadlines. No question markers.",
-      // Use "guardrail" for one rule or "guardrails" for many
-      // Failed guardrails retry up to guardrail_max_retries times
-      // "guardrail": "Every factual claim needs context support.",
-      // "guardrails": [
-      //   "Every factual claim must be supported by context.",
-      //   "The answer must match the expected output format."
-      // ],
-      // "guardrail_max_retries": 2,
+      "expected_output": "PATH A (questions needed): a BureaucracyThinking object with a 'questions' list of at most 3 cleaned-up questions, each with 'text' and 'why'. PATH B (research ready): a BureaucracyReport object with 'arrival_checklist', 'transport_card_steps', and 'other_info' lists (each ChecklistItem has 'title', 'description', 'source').",
 
-      // Advanced task options:
-      // Docs: https://docs.crewai.com/concepts/tasks
-      // "type": "ConditionalTask",
-      // "condition": { "python": "my_project.conditions.should_run" },
-      // "output_json": { "python": "my_project.models.ReportOutput" },
-      // "output_pydantic": null,
-      // "response_model": null,
-      // "converter_cls": { "python": "my_project.converters.CustomConverter" },
-      // "markdown": false,
-      // "input_files": { "brief": "data/brief.txt" },
-      // "security_config": {},
+      // Final task returns BureaucracyReport when research is complete,
+      // or BureaucracyThinking (with questions) when more info is needed.
+      "output_pydantic": { "python": "guide_creator_flow.crews.content_crew.output_models.BureaucracyReport" },
 
       // Which agent handles this task
       "agent": "Create_report"
-
-      // "tools": [],
-      // "human_input": false,
-      // "async_execution": false
-
-      //"output_file": "output/Erasmus_Application_Guide.md"
     }
-
   ],
 
-  // Execution process
-  // "sequential" — tasks run in order, each receiving prior task outputs
-  // "hierarchical" — a manager agent delegates tasks (requires manager_llm)
+  // Execution process: tasks run in order, each receiving prior task outputs
   "process": "sequential",
 
   // Enable verbose logging during execution
@@ -100,38 +56,6 @@
   // Enable crew memory — persists context and learnings across tasks
   "memory": false,
 
-  // Automatically plan the execution strategy before running tasks
-  // "planning": false,
-
-  // LLM for the planning step (used when planning is true)
-  // "planning_llm": "openai/gpt-4o",
-
-  // LLM for the manager agent (required when process is "hierarchical")
-  // "manager_llm": "openai/gpt-4o",
-
-  // Crew-level LLM fields also accept object form for custom endpoints
-  // "chat_llm": {"model": "llama3", "provider": "ollama", "base_url": "http://localhost:11434"},
-
-  // Advanced crew options:
-  // Docs: https://docs.crewai.com/concepts/crews
-  // For hierarchical crews, manager_agent can reference an agents/<name>.jsonc file
-  // that is not included in the "agents" list.
-  // "manager_agent": "search_for_a_given_country_th",
-  // "before_kickoff_callbacks": [{"python": "my_project.callbacks.before_kickoff"}],
-  // "after_kickoff_callbacks": [{"python": "my_project.callbacks.after_kickoff"}],
-  // "function_calling_llm": "openai/gpt-4o-mini",
-  "max_rpm": 10,
-  // "cache": true,
-  // "knowledge_sources": [],
-  // "embedder": {},
-  // "output_log_file": "crew.log",
-  // "stream": false,
-  // "tracing": false,
-  // "security_config": {},
-
   // Optional runtime input defaults.
-  // Use {placeholder} in agent or task text, for example:
-  // "description": "Research {topic} and write a brief"
-  // `crewai run` prompts for any placeholders missing from this object.
   "inputs": {}
 }

@@ -12,5 +12,15 @@
   "finances": {
     "function": "kickoff_finances_crew",
     "required_fields": ["origin_city", "destination_city", "destination_country"]
+  },
+  "commute": {
+    "function": "kickoff_commute_crew",
+    "required_fields": ["destination_city", "destination_country", "destination_university", "semester"],
+    "comments": "Handles public transport network, student passes & discounts, cycling/alternative commute, and monthly budget."
+  },
+  "housing": {
+    "function": "kickoff_housing_crew",
+    "required_fields": ["destination_city", "destination_country", "destination_university", "semester"],
+    "comments": "Handles student accommodation types, realistic rent prices, recommended neighborhoods, and trusted platforms."
   }
 }
