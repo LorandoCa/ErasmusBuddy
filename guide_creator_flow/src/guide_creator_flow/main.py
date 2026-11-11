@@ -121,7 +121,7 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
                     continue
 
                 print("Going to extract questions\n\n")
-                questions = extract_questions(section, outcome) # Define an agent responsible for colecting those questions
+                questions = extract_questions(section, outcome) # Define an agent responsible for colecting those questions and make some sanitization
                 if questions:
                     asked_questions[section] = questions
                 else:
